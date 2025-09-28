@@ -1,0 +1,70 @@
+import pandas as pd
+import numpy as np
+
+def main():
+    # 1. Load data
+    url = "https://www.cs.odu.edu/~sampath/courses/data/diamonds.csv"
+    try:
+        diamond = pd.read_csv(url)
+    except Exception as e:
+        print("Could not load from URL; trying local file. Error:", e)
+        diamond = pd.read_csv("diamonds.csv")
+    
+    # 2. List data types and last 10 rows
+    print("Data types of each column:")
+    print(diamond.dtypes)
+    print("\nLast 10 rows of the DataFrame:")
+    print(diamond.tail(10))
+    
+    # 3. Convert “price” to numpy array and do analysis
+    diamond_price = diamond['price'].to_numpy()
+    
+    # Middle (median) value
+    median_price = np.median(diamond_price)
+    print("\nMedian (middle) diamond price:", median_price)
+    
+    # Sort ascending
+    sorted_prices = np.sort(diamond_price)
+    print("\nFirst 10 sorted prices:", sorted_prices[:10])
+    
+    # Range = max - min
+    price_range = np.ptp(diamond_price)  # “ptp” = peak-to-peak
+    print("\nPrice range (max – min):", price_range)
+    
+    # 4. Show “Premium” cut diamonds: depth, price, clarity
+    premium_df = diamond[diamond['cut'] == 'Premium'][['depth', 'price', 'clarity']]
+    print("\nPremium cut diamonds (depth, price, clarity) – first few:")
+    print(premium_df.head(10))
+    
+    # 5. Add new column “priceVolatility” = 12% of price (use lambda)
+    diamond['priceVolatility'] = diamond['price'].apply(lambda x: x * 0.12)
+    
+    # Display rows 4, 27, and 1221 with columns carat, color, price, priceVolatility
+    print("\nRows 4, 27, 1221 with carat, color, price, priceVolatility:")
+    print(diamond.loc[[4, 27, 1221], ['carat', 'color', 'price', 'priceVolatility']])
+    
+    # 6. Summary statistics for clarity “VS1”
+    vs1_df = diamond[diamond['clarity'] == 'VS1']
+    print("\nSummary statistics for diamonds with clarity = VS1:")
+    print(vs1_df.describe())
+    
+    # --- Optional ---
+    # 7. Add column “quality” using a custom function
+    def classify_quality(depth):
+        if 54 <= depth <= 57:
+            return "round diamond"
+        elif 68 <= depth <= 74:
+            return "princesscut diamond"
+        else:
+            return np.nan
+    
+    diamond['quality'] = diamond['depth'].apply(classify_quality)
+    
+    # 8. Fill missing values in “quality” with string "NaN"
+    diamond['quality'] = diamond['quality'].fillna("NaN")
+    
+    print("\nAdded 'quality' column, showing first 20 rows:")
+    print(diamond[['depth', 'quality']].head(20))
+
+if __name__ == "__main__":
+    main()
